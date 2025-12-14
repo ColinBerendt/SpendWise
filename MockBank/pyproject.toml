@@ -1,0 +1,16 @@
+[project]
+name = "mockbank"
+version = "0.1.0"
+description = "MockBank - Simulated bank for SpendWise testing"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.32.0",
+    "jinja2>=3.1.0",
+    "apscheduler>=3.10.0",
+    "python-multipart>=0.0.9",
+    "yfinance>=0.2.0",
+    "requests>=2.31.0",
+]
+

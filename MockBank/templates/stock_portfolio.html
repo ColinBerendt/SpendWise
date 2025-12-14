@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title_suffix %} - Stock Portfolio{% endblock %}
+
+{% block content %}
+<h1>Stock Portfolio</h1>
+
+<!-- API INFO -->
+<div class="info-box" style="margin-bottom: 1.5rem;">
+    <p><strong>GET</strong> <code>/api/stocks</code> — Get all stocks</p>
+    <p><strong>GET</strong> <code>/api/stocks/{ticker}</code> — Get single stock</p>
+    <p><strong>POST</strong> <code>/api/stocks/{ticker}/add</code> — Buy stocks <code>{"quantity": n, "price": CHF}</code></p>
+    <p><strong>POST</strong> <code>/api/stocks/{ticker}/remove</code> — Sell stocks <code>{"quantity": n, "price": CHF}</code></p>
+</div>
+
+<section class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 style="margin: 0;">Portfolio <span style="font-size: 0.7em; font-weight: normal; color: var(--text-muted);">📡 Live from Yahoo Finance</span></h2>
+        <form action="/stocks/refresh" method="post" style="margin: 0;">
+            <button type="submit" class="btn btn-secondary">🔄 Refresh Prices</button>
+        </form>
+    </div>
+    
+    {% if stocks %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Ticker</th>
+                <th>Qty</th>
+                <th>Invested</th>
+                <th>Price</th>
+                <th>Market Value</th>
+                <th>Gain/Loss</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stock in stocks %}
+            <tr>
+                <td class="ticker">{{ stock.ticker }}</td>
+                <td>{{ stock.quantity }}</td>
+                <td>{{ "%.2f"|format(stock.invested) }} CHF</td>
+                <td>
+                    {% if stock.current_price_chf %}
+                        {{ "%.2f"|format(stock.current_price_chf) }} CHF
+                    {% else %}
+                        <span style="color: var(--text-muted);">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if stock.market_value %}
+                        {{ "%.2f"|format(stock.market_value) }} CHF
+                    {% else %}
+                        <span style="color: var(--text-muted);">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if stock.gain_loss is not none %}
+                        <span class="{% if stock.gain_loss >= 0 %}income{% else %}expense{% endif %}">
+                            {% if stock.gain_loss >= 0 %}+{% endif %}{{ "%.2f"|format(stock.gain_loss) }} CHF
+                            <small>({% if stock.gain_loss_pct >= 0 %}+{% endif %}{{ "%.1f"|format(stock.gain_loss_pct) }}%)</small>
+                        </span>
+                    {% else %}
+                        <span style="color: var(--text-muted);">—</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr style="font-weight: bold; border-top: 2px solid var(--border);">
+                <td colspan="2">Total</td>
+                <td>{{ "%.2f"|format(stocks|sum(attribute='invested')) }} CHF</td>
+                <td></td>
+                <td>
+                    {% set total_market = stocks|selectattr('market_value')|map(attribute='market_value')|select|list %}
+                    {% if total_market %}
+                        {{ "%.2f"|format(total_market|sum) }} CHF
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td>
+                    {% set total_gain = stocks|selectattr('gain_loss')|map(attribute='gain_loss')|select|list %}
+                    {% if total_gain %}
+                        {% set gain_sum = total_gain|sum %}
+                        <span class="{% if gain_sum >= 0 %}income{% else %}expense{% endif %}">
+                            {% if gain_sum >= 0 %}+{% endif %}{{ "%.2f"|format(gain_sum) }} CHF
+                        </span>
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+    <p style="margin-top: 0.5rem; font-size: 0.8em; color: var(--text-muted);">
+        💱 Exchange rate: 1 USD = {{ "%.4f"|format(stocks[0].exchange_rate) }} CHF (live)
+    </p>
+    {% else %}
+    <p class="empty-state">No stocks in portfolio.</p>
+    {% endif %}
+</section>
+{% endblock %}
+

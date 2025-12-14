@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+{% block title_suffix %} - Recurring Transactions{% endblock %}
+
+{% block content %}
+<h1>Recurring Transactions</h1>
+
+<!-- ADD RECURRING SECTION -->
+<section class="card">
+    <h2>Add Recurring Transaction</h2>
+    
+    <form action="/recurring/add" method="post" id="addRecurringForm">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="rec-type">Type</label>
+                <select id="rec-type" name="description" onchange="updateFrequencyOptions()" required>
+                    <option value="">-- Select Type --</option>
+                    {% for rec in recurring_types %}
+                    <option value="{{ rec.name }}">{{ rec.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="rec-amount">Amount (CHF)</label>
+                <input type="number" id="rec-amount" name="amount" step="0.01" placeholder="" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="rec-frequency">Frequency</label>
+                <select id="rec-frequency" name="frequency" onchange="updateFrequencyOptions()" required>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly" selected>Monthly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Dynamic schedule options -->
+        <div class="form-row" id="schedule-options">
+            <!-- Weekly: Day of week -->
+            <div class="form-group schedule-weekly" style="display: none;">
+                <label for="rec-day-of-week">Day of Week</label>
+                <select id="rec-day-of-week" name="day_of_week">
+                    {% for val, name in days_of_week %}
+                    <option value="{{ val }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Monthly: Day of month -->
+            <div class="form-group schedule-monthly">
+                <label for="rec-day-of-month">Day of Month</label>
+                <select id="rec-day-of-month" name="day_of_month">
+                    {% for day in range(1, 32) %}
+                    <option value="{{ day }}">{{ day }}.</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Yearly: Month + Day -->
+            <div class="form-group schedule-yearly" style="display: none;">
+                <label for="rec-month">Month</label>
+                <select id="rec-month" name="month">
+                    {% for val, name in months %}
+                    <option value="{{ val }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group schedule-yearly" style="display: none;">
+                <label for="rec-day-of-year">Day</label>
+                <select id="rec-day-of-year" name="day_of_year">
+                    {% for day in range(1, 32) %}
+                    <option value="{{ day }}">{{ day }}.</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">➕ Add Recurring</button>
+    </form>
+</section>
+
+<!-- ACTIVE RECURRING SECTION -->
+<section class="card">
+    <h2>Active Recurring Transactions ({{ recurring|length }})</h2>
+    
+    {% if recurring %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Frequency</th>
+                <th>Schedule</th>
+                <th>Last Executed</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rec in recurring %}
+            <tr>
+                <td>{{ rec.description }}</td>
+                <td class="{% if rec.amount < 0 %}expense{% else %}income{% endif %}">
+                    {{ "%.2f"|format(rec.amount) }} CHF
+                </td>
+                <td>{{ rec.frequency }}</td>
+                <td>
+                    {% if rec.frequency == 'weekly' %}
+                        {{ days_of_week[rec.day_of_week][1] if rec.day_of_week is not none else '-' }}
+                    {% elif rec.frequency == 'monthly' %}
+                        {{ rec.day_of_month }}.
+                    {% elif rec.frequency == 'yearly' %}
+                        {{ rec.day_of_year }}. {{ months[rec.month - 1][1] if rec.month else '-' }}
+                    {% endif %}
+                </td>
+                <td>{{ rec.last_executed or 'Never' }}</td>
+                <td class="actions">
+                    <button class="btn btn-small btn-edit" 
+                            data-id="{{ rec.id }}"
+                            data-description="{{ rec.description }}"
+                            data-amount="{{ rec.amount }}"
+                            data-frequency="{{ rec.frequency }}"
+                            data-day-of-week="{{ rec.day_of_week if rec.day_of_week is not none else '' }}"
+                            data-day-of-month="{{ rec.day_of_month if rec.day_of_month is not none else '' }}"
+                            data-month="{{ rec.month if rec.month is not none else '' }}"
+                            data-day-of-year="{{ rec.day_of_year if rec.day_of_year is not none else '' }}"
+                            onclick="openRecurringEditModal(this)">
+                        Edit
+                    </button>
+                    <form action="/recurring/delete/{{ rec.id }}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-small btn-danger" 
+                                onclick="return confirm('Delete this recurring transaction?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No recurring transactions set up.</p>
+    {% endif %}
+    
+</section>
+
+<!-- Edit Modal -->
+<div id="editRecurringModal" class="modal">
+    <div class="modal-content">
+        <h3>Edit Recurring Transaction</h3>
+        <form id="editRecurringForm" method="post">
+            <div class="form-group">
+                <label for="edit-rec-type">Type</label>
+                <select id="edit-rec-type" name="description" required>
+                    {% for rec in recurring_types %}
+                    <option value="{{ rec.name }}">{{ rec.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="edit-rec-amount">Amount (CHF)</label>
+                <input type="number" id="edit-rec-amount" name="amount" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="edit-rec-frequency">Frequency</label>
+                <select id="edit-rec-frequency" name="frequency" onchange="updateEditFrequencyOptions()">
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+            </div>
+            
+            <div id="edit-schedule-options">
+                <div class="form-group edit-schedule-weekly" style="display: none;">
+                    <label for="edit-rec-day-of-week">Day of Week</label>
+                    <select id="edit-rec-day-of-week" name="day_of_week">
+                        {% for val, name in days_of_week %}
+                        <option value="{{ val }}">{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group edit-schedule-monthly">
+                    <label for="edit-rec-day-of-month">Day of Month</label>
+                    <select id="edit-rec-day-of-month" name="day_of_month">
+                        {% for day in range(1, 32) %}
+                        <option value="{{ day }}">{{ day }}.</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group edit-schedule-yearly" style="display: none;">
+                    <label for="edit-rec-month">Month</label>
+                    <select id="edit-rec-month" name="month">
+                        {% for val, name in months %}
+                        <option value="{{ val }}">{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group edit-schedule-yearly" style="display: none;">
+                    <label for="edit-rec-day-of-year">Day</label>
+                    <select id="edit-rec-day-of-year" name="day_of_year">
+                        {% for day in range(1, 32) %}
+                        <option value="{{ day }}">{{ day }}.</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeRecurringEditModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">✓ Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updateFrequencyOptions() {
+        const freq = document.getElementById('rec-frequency').value;
+        
+        document.querySelectorAll('.schedule-weekly').forEach(el => el.style.display = freq === 'weekly' ? 'block' : 'none');
+        document.querySelectorAll('.schedule-monthly').forEach(el => el.style.display = freq === 'monthly' ? 'block' : 'none');
+        document.querySelectorAll('.schedule-yearly').forEach(el => el.style.display = freq === 'yearly' ? 'block' : 'none');
+    }
+    
+    function updateEditFrequencyOptions() {
+        const freq = document.getElementById('edit-rec-frequency').value;
+        
+        document.querySelectorAll('.edit-schedule-weekly').forEach(el => el.style.display = freq === 'weekly' ? 'block' : 'none');
+        document.querySelectorAll('.edit-schedule-monthly').forEach(el => el.style.display = freq === 'monthly' ? 'block' : 'none');
+        document.querySelectorAll('.edit-schedule-yearly').forEach(el => el.style.display = freq === 'yearly' ? 'block' : 'none');
+    }
+    
+    function openRecurringEditModal(btn) {
+        const id = btn.dataset.id;
+        const description = btn.dataset.description;
+        const amount = btn.dataset.amount;
+        const frequency = btn.dataset.frequency;
+        const dayOfWeek = btn.dataset.dayOfWeek;
+        const dayOfMonth = btn.dataset.dayOfMonth;
+        const month = btn.dataset.month;
+        const dayOfYear = btn.dataset.dayOfYear;
+        
+        document.getElementById('editRecurringForm').action = `/recurring/edit/${id}`;
+        document.getElementById('edit-rec-type').value = description;
+        document.getElementById('edit-rec-amount').value = amount;
+        document.getElementById('edit-rec-frequency').value = frequency;
+        
+        if (dayOfWeek) document.getElementById('edit-rec-day-of-week').value = dayOfWeek;
+        if (dayOfMonth) document.getElementById('edit-rec-day-of-month').value = dayOfMonth;
+        if (month) document.getElementById('edit-rec-month').value = month;
+        if (dayOfYear) document.getElementById('edit-rec-day-of-year').value = dayOfYear;
+        
+        updateEditFrequencyOptions();
+        document.getElementById('editRecurringModal').style.display = 'flex';
+    }
+    
+    function closeRecurringEditModal() {
+        document.getElementById('editRecurringModal').style.display = 'none';
+    }
+    
+    document.getElementById('editRecurringModal').addEventListener('click', function(e) {
+        if (e.target === this) closeRecurringEditModal();
+    });
+    
+    // Initialize
+    updateFrequencyOptions();
+</script>
+{% endblock %}
+

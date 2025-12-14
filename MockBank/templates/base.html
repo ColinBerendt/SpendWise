@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MockBank - At Your Service{% block title_suffix %}{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">MockBank - At Your Service</div>
+        <div class="nav-balances">
+            <span class="balance-item">
+                <span class="balance-label">Cash:</span>
+                <span class="balance-value {% if balance >= 0 %}positive{% else %}negative{% endif %}">
+                    CHF {{ "%.2f"|format(balance|default(0)) }}
+                </span>
+            </span>
+            <span class="balance-divider">|</span>
+            <span class="balance-item">
+                <span class="balance-label">Net Worth:</span>
+                <span class="balance-value {% if net_worth >= 0 %}positive{% else %}negative{% endif %}">
+                    CHF {{ "%.2f"|format(net_worth|default(0)) }}
+                </span>
+            </span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link {% if active_tab == 'bank_statement' %}active{% endif %}">
+                Bank Statement
+            </a>
+            <a href="/stocks" class="nav-link {% if active_tab == 'stocks' %}active{% endif %}">
+                Stock Portfolio
+            </a>
+            <a href="/recurring" class="nav-link {% if active_tab == 'recurring' %}active{% endif %}">
+                Recurring
+            </a>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="/static/app.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
+
