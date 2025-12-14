@@ -172,7 +172,7 @@ Open `http://localhost:8080` to:
 ┌─────────────────────────────────────────────────────────────────┐
 │                           FRONTEND                              │
 │                      Next.js (localhost:3000)                   │
-│   Dashboard | Transactions | Budgets | Stocks | Chat Panel     │
+│   Dashboard | Transactions | Budgets | Stocks | Chat Panel      │
 └───────────────────────────────┬─────────────────────────────────┘
                                 │ HTTP
                                 ▼
@@ -180,20 +180,20 @@ Open `http://localhost:8080` to:
 │                       SPENDWISE API                             │
 │                     FastAPI (localhost:8000)                    │
 │                                                                 │
-│              ┌──────── ORCHESTRATOR AGENT ────────┐            │
-│              │                                    │            │
-│     ┌────────┼────────┬────────────┬─────────────┼────────┐   │
-│     ▼        ▼        ▼            ▼             ▼        │   │
-│  Spending  Budget  Insights    Travel       Stock     Import  │
-│   Agent    Agent    Agent      Agent        Agent     Agent   │
-│  (RO DB)  (RW DB)  (RO+SMS)   (APIs)      (RO+FMP)  (RW DB)  │
+│              ┌──────── ORCHESTRATOR AGENT ────────┐             │
+│              │                                    │             │
+│     ┌────────┼────────┬────────────┬─────────────┼────────┐     │
+│     ▼        ▼        ▼            ▼             ▼        │     │
+│  Spending  Budget  Insights    Travel       Stock     Import    │
+│   Agent    Agent    Agent      Agent        Agent     Agent     │
+│  (RO DB)  (RW DB)  (RO+SMS)   (APIs)      (RO+FMP)  (RW DB)     │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                    DOCKER SANDBOXES (MCP)                       │
 │                                                                 │
-│  SQLite(RO) | SQLite(RW) | SMS | Travel | Stock                │
+│  SQLite(RO) | SQLite(RW) | SMS | Travel | Stock                 │
 └─────────────────────────────────────────────────────────────────┘
                                 │
         ┌───────────────────────┼───────────────────────┐
