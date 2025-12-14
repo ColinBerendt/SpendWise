@@ -80,7 +80,7 @@ sms_manifest = DevMCPManifest(
 
 ```python
 runtime_perms = [
-    # Netzwerk: Nur Twilio + PyPI
+    # Network: Only Twilio + PyPI
     DomainPort(domain="api.twilio.com", port=443),
     DomainPort(domain="pypi.org", port=443),
     DomainPort(domain="files.pythonhosted.org", port=443),
@@ -92,18 +92,18 @@ runtime_perms = [
 ]
 ```
 
-## Herausforderungen & Loesungen
+## Challenges & Solutions
 
-| Problem | Loesung |
-|---------|---------|
-| Package nicht auf PyPI | `DevMCPManifest` mit `code_mount` |
+| Problem | Solution |
+|---------|----------|
+| Package not on PyPI | `DevMCPManifest` with `code_mount` |
 | PEP 668 (externally-managed-environment) | `pip install --break-system-packages` |
-| `python` nicht im PATH | `python3` verwenden |
-| Dependencies fehlen | PyPI domains zur allowed egress hinzufuegen |
+| `python` not in PATH | Use `python3` |
+| Missing dependencies | Add PyPI domains to allowed egress |
 
 ## Usage
 
-### .env konfigurieren
+### Configure .env
 
 ```env
 OPENAI_API_KEY=sk-...
@@ -113,15 +113,15 @@ TWILIO_PHONE_NUMBER=+1234567890
 NOTIFICATION_PHONE=+41791234567
 ```
 
-### Demo starten
+### Start Demo
 
 ```bash
 cd SpendWise
-uv run testing/seed_data.py   # Testdaten
+uv run testing/seed_data.py   # Test data
 uv run testing/mcp_sms_demo.py
 ```
 
-### Permissions bestaetigen
+### Confirm Permissions
 
 ```
 Allow access to file system path: .../data (read: True, write: False) → yes
@@ -133,9 +133,9 @@ Allow access to env var: TWILIO_AUTH_TOKEN → yes
 Allow access to env var: TWILIO_PHONE_NUMBER → yes
 ```
 
-## Fuer Produktion
+## For Production
 
-Um das Package zu publishen:
+To publish the package:
 
 ```bash
 cd mcp-server-sms
@@ -143,13 +143,13 @@ uv build
 uv publish
 ```
 
-Dann kann `MCPManifest` statt `DevMCPManifest` verwendet werden:
+Then `MCPManifest` can be used instead of `DevMCPManifest`:
 
 ```python
 sms_manifest = MCPManifest(
     name="SMS MCP Server",
     registry=Registry.PYPI,
-    package_name="mcp-server-sms",  # Von PyPI
+    package_name="mcp-server-sms",  # From PyPI
     permissions=[...],
 )
 ```

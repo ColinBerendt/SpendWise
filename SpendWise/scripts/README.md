@@ -34,39 +34,39 @@ uv run scripts/bank_sync.py
 
 ## weekly_check.py (deprecated - functionality integrated into bank_sync.py)
 
-Woechentlicher Budget-Check mit automatischen SMS-Alerts.
+Weekly budget check with automatic SMS alerts.
 
 ### Usage
 
 ```bash
-# Standard (nutzt NOTIFICATION_PHONE aus .env)
+# Standard (uses NOTIFICATION_PHONE from .env)
 uv run scripts/weekly_check.py
 
-# Mit custom Telefonnummer
+# With custom phone number
 uv run scripts/weekly_check.py --phone +41791234567
 
-# Dry-Run (keine SMS, nur anzeigen)
+# Dry-Run (no SMS, only display)
 uv run scripts/weekly_check.py --dry-run
 ```
 
-### Cron Setup (Woechentlich)
+### Cron Setup (Weekly)
 
 ```bash
-# Crontab oeffnen
+# Open crontab
 crontab -e
 
-# Jeden Sonntag um 18:00 Uhr ausfuehren
+# Run every Sunday at 18:00
 0 18 * * 0 cd /Users/robin/Datenbank/University-HSG/SpendWise/SpendWise && /path/to/.venv/bin/python scripts/weekly_check.py >> /tmp/spendwise_weekly.log 2>&1
 ```
 
-### Was es macht
+### What It Does
 
-1. Verbindet zu SQLite (readonly) und SMS MCP Server (Docker)
-2. Agent analysiert alle aktiven Budgets
-3. Fuer Budgets mit 80%+ Usage:
-   - Generiert lustigen, hilfreichen Tipp
-   - Sendet SMS-Alert via Twilio
-4. Gibt Zusammenfassung aus
+1. Connects to SQLite (readonly) and SMS MCP Server (Docker)
+2. Agent analyzes all active budgets
+3. For budgets with 80%+ usage:
+   - Generates a fun, helpful tip
+   - Sends SMS alert via Twilio
+4. Outputs summary
 
 ### Beispiel Output
 
@@ -78,33 +78,33 @@ crontab -e
 Database: /path/to/spendwise.db
 Phone: +41791234567
 
-Agent analysiert Budgets...
+Agent analyzing budgets...
 ------------------------------------------------------------
 
-Budget-Analyse Woche 49:
+Budget Analysis Week 49:
 
 - Food: CHF 89/100 (89%) - WARNING
-  -> SMS gesendet: "Dein Magen will Steak... Tipp: Meal-Prep!"
+  -> SMS sent: "Your stomach wants steak... Tip: Meal prep!"
 
 - Transport: CHF 45/100 (45%) - OK
 
 - Entertainment: CHF 110/100 (110%) - OVER BUDGET
-  -> SMS gesendet: "Streaming-Jungle! Tipp: Ein Abo pausieren."
+  -> SMS sent: "Streaming jungle! Tip: Pause one subscription."
 
-Zusammenfassung:
+Summary:
 - 1 OK
 - 1 Warning  
 - 1 Over Budget
-- 2 SMS gesendet
+- 2 SMS sent
 
 ============================================================
-Weekly Check abgeschlossen!
+Weekly Check completed!
 ============================================================
 ```
 
 ### Environment Variables
 
-Erforderlich in `.env`:
+Required in `.env`:
 
 ```env
 OPENAI_API_KEY=sk-...
