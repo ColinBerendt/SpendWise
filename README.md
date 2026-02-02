@@ -15,7 +15,7 @@
 
 **Colin Berendt, Yannik Holenstein, Robin Sutter**  
 University of St.Gallen (HSG)
-Course: Introduction to Robotics
+Course: Coding with AI
 
 ---
 
