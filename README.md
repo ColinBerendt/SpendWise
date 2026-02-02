@@ -8,6 +8,15 @@
 ![Docker](https://img.shields.io/badge/Docker-Sandbox-2496ED?logo=docker)
 ![SQLite](https://img.shields.io/badge/SQLite-MCP-003B57?logo=sqlite)
 
+
+---
+
+## Authors
+
+**Colin Berendt, Yannik Holenstein, Robin Sutter**  
+University of St.Gallen (HSG)
+Course: Introduction to Robotics
+
 ---
 
 This repository contains a complete personal finance application with:
